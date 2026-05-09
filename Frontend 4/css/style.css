@@ -1,0 +1,103 @@
+/* ── Base ── */
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    background: #f4f6f9;
+    color: #222;
+}
+
+/* ── Navigation ── */
+.nav-bar {
+    background: #1F3864;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.brand {color: #fff; font-weight: bold; font-size: 1.2rem;}
+.nav-link {
+    color: #cce0ff;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+.nav-link:hover, .nav-link.active {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+#breadcrumb {
+    padding: 8px 24px;
+    background: #eef6fa;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+#breadcrumb a {color: #2E4A8B; text-decoration: none;}
+#breadcrumb a:hover {text-decoration: underline;}
+#breadcrumb .crumb-sep {margin: 0 6px; color: #999;}
+
+/* ── Views ── */
+.view {display: none; padding: 24px;} /* hidden by default */
+.view.active {display: block;} /* shown when active */
+
+/* ── Book cards ── */
+.book-card {
+    background: #fff;
+    border: 1px solid #dce3f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+}
+.book-card:hover {box-shadow: 0 4px 12px rgba(0,0,0,0.12);}
+
+/* ── Loading / Error ── */
+.loading {color: #666; font-style: italic;}
+.error {color: #c0392b; font-weight: bold;}
+
+/* ── Toast ── */
+#toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1F3864;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+#toast.show {opacity: 1;}
+
+#loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+#spinner {
+    padding: 20px 40px;
+    background: #1F3864;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+.tab-bar {display: flex; gap: 4px; margin-bottom: 16px;}
+.tab-btn {
+    padding: 8px 20px;
+    border: none;
+    cursor: pointer;
+    background: #dce3f0;
+    border-radius: 4px 4px 0 0;
+}
+.tab-btn.active { background: #1F3864; color: #fff; }

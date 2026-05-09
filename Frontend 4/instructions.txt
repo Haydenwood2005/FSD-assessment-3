@@ -1,0 +1,21 @@
+The full stack application is run on an appropriate web server, using HTTP. 
+MySQL is connected on the local instance, using local host port 3306, opening the correctionnoticedb inside.
+The API is set up using uvicorn, using uvicorn main:app --reload in a terminal to run it.
+
+
+This is how to run the given code:
+
+Open all 3 files (Frontend, Backend API on VS code , CorrectionNoticeDB on MySQL workbench) simultaniously.
+Open a terminal on the API VScode, and run: uvicorn main:app --reload
+Open a terminal on the frontend VScode, and run: python -m http.server 5500
+
+then open: 
+this will open the http link to the frontend 
+
+
+
+These are the testing procedures for the application:
+
+
+
+This is the troubleshooting guidance:
