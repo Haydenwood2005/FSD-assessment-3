@@ -1,6 +1,7 @@
 # Connects VSCode to FASTAPI, allowing this code to be a working API
 
 from fastapi import FastAPI, HTTPException, Depends, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer #this allows a JWT to be given through the auth instead of /token
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
@@ -8,6 +9,14 @@ from pydantic import BaseModel
 from db import get_connection
 
 app = FastAPI(title="Correction Notice API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # JWT SETTINGS
 
@@ -43,11 +52,38 @@ def get_current_user(token: str = Depends(oauth2_scheme)): #Reads the Bearer tok
         if username is None:
             raise HTTPException(status_code=401, detail="Invalid token (missing username)")
 
-        user = users.get(username)
+        # Officer login
+        if username == "officer_user":
+            return {
+                "username": username,
+                "role": "officer"
+            }
+
+        # Citizen login from database
+        connection = get_connection()
+
+        if connection is None:
+            raise HTTPException(status_code=500, detail="Database connection failed")
+
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT * FROM users WHERE username = %s",
+            (username,)
+        )
+
+        user = cursor.fetchone()
+
+        cursor.close()
+        connection.close()
+
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
 
-        return {"username": username, "role": user["role"]}
+        return {
+            "username": username,
+            "role": user["role"]
+        }
 
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
@@ -68,6 +104,18 @@ def root():
 
 
 #Pydantic models - used for PUT and POST endpoints to allow editing of data
+
+
+class UserRegister(BaseModel):
+    username: str
+    password: str
+    full_name: str
+    date_of_birth: str
+    email: str
+    phone: str
+    licence_number: str
+    vehicle_registration: str
+
 
 class DriverCreate(BaseModel): #allows officer to add a driver to the data to allow an issuing of a notice to them.
     First_Name: str
@@ -363,16 +411,72 @@ def create_notice_for_driver(driver_id: int, notice: NoticeCreate, current_user:
 
 # POST 3 - /token - creates JWT when username and password entered into authorisation for allowing access to edit data.
 @app.post("/token")
-def token_post(form_data: OAuth2PasswordRequestForm = Depends()): #this allows JWT token to be given with correct username and pass
+def token_post(form_data: OAuth2PasswordRequestForm = Depends()):
+
     username = form_data.username
     password = form_data.password
 
-    user = users.get(username)
-    if not user or user["password"] != password: #if info incorrect for recieving JWT
-        raise HTTPException(status_code=401, detail="Invalid username or password")
+    # Officer login
+    if username == "officer_user" and password == "OfficerPass123":
 
-    access_token = create_access_token(data={"sub": username, "role": user["role"]})
-    return {"access_token": access_token, "token_type": "bearer"} #returns the token aswell as confirming the user that its theirs
+        access_token = create_access_token(
+            data={
+                "sub": username,
+                "role": "officer"
+            }
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "role": "officer"
+        }
+
+    # Citizen login from database
+    connection = get_connection()
+
+    if connection is None:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+
+        cursor.execute(
+            "SELECT * FROM users WHERE username = %s",
+            (username,)
+        )
+
+        user = cursor.fetchone()
+
+        if not user:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid username or password"
+            )
+
+        if user["password"] != password:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid username or password"
+            )
+
+        access_token = create_access_token(
+            data={
+                "sub": username,
+                "role": "citizen"
+            }
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "role": "citizen"
+        }
+
+    finally:
+        cursor.close()
+        connection.close()
 
 
 # PUT ENDPOINTS
@@ -554,3 +658,75 @@ def token_delete(form_data: OAuth2PasswordRequestForm = Depends()): #same as POS
 
     access_token = create_access_token(data={"sub": username, "role": user["role"]})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.post("/register")
+def register_user(user: UserRegister):
+
+    connection = get_connection()
+
+    if connection is None:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+
+        cursor.execute(
+            "SELECT * FROM users WHERE username = %s",
+            (user.username,)
+        )
+
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            raise HTTPException(
+                status_code=400,
+                detail="Username already exists"
+            )
+
+        sql = """
+        INSERT INTO users
+        (
+            username,
+            password,
+            full_name,
+            date_of_birth,
+            email,
+            phone,
+            licence_number,
+            vehicle_registration,
+            role
+        )
+        VALUES
+        (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """
+
+        values = (
+            user.username,
+            user.password,
+            user.full_name,
+            user.date_of_birth,
+            user.email,
+            user.phone,
+            user.licence_number,
+            user.vehicle_registration,
+            "citizen"
+        )
+
+        cursor.execute(sql, values)
+        connection.commit()
+
+        return {
+            "message": "User registered successfully"
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        cursor.close()
+        connection.close()
