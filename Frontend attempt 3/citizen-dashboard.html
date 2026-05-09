@@ -1,0 +1,60 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header>
+    <nav class="container">
+        <h1>Citizen Dashboard</h1>
+
+        <button onclick="logout()" class="logout-btn">
+            Logout
+        </button>
+    </nav>
+</header>
+
+<main class="container">
+
+    <div class="breadcrumb">
+        Home > Citizen Dashboard
+    </div>
+
+    <div class="card">
+        <h2>Welcome Citizen</h2>
+        <p id="username-display"></p>
+    </div>
+
+    <div class="card">
+        <h2>Your Citation Information</h2>
+
+        <div id="loading" class="loading">
+            Loading citations...
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Notice ID</th>
+                        <th>Violation</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="citations-table-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</main>
+
+<script src="js/auth.js"></script>
+<script src="js/citizen.js"></script>
+
+</body>
+</html>
