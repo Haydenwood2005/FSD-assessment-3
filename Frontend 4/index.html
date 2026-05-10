@@ -200,25 +200,43 @@
 
         <!-- Driver/Vehicle Owner interface views -->
         <section id="view-user-dashboard" class="view">
-            <h2>Driver/Vehicle Owner dashboard</h2>
-            <p>view-user-dashboard</p>
-            <h2>All Books</h2>
-            <div id="list-controls">
-                <input
-                    type="text"
-                    id="search-input"
-                    placeholder="Search by title or author..."
-                    style="padding:8px; width:300px; border:1px solid #ccc; border-radius:4px; font-size:1rem;"
-                >
-                <button id="refresh-btn" onclick="state.books = []; loadBookList()">
-                    &#8635; Refresh
-                </button>
-            </div>
-        </section>
+
+    <h2>My Citation Dashboard</h2>
+
+    <p>
+        This page shows traffic correction notices linked to your registered vehicle.
+    </p>
+
+    <div id="my-notices-list">
+        Loading citations...
+    </div>
+
+</section>
+
         <section id="view-user-profile" class="view">
-            <h2>Driver/Vehicle Owner Profile</h2>
-            <p>view-user-profile</p>
-        </section>
+
+    <h2>Driver/Vehicle Owner Profile</h2>
+
+    <p><strong>Username:</strong> <span id="profile-username"></span></p>
+    <p><strong>Full Name:</strong> <span id="profile-full-name"></span></p>
+    <p><strong>Date of Birth:</strong> <span id="profile-dob"></span></p>
+    <p><strong>Licence Number:</strong> <span id="profile-licence"></span></p>
+    <p><strong>Vehicle Registration:</strong> <span id="profile-vehicle"></span></p>
+
+    <h3>Update Contact Details</h3>
+
+    <label>Email</label>
+    <input type="email" id="profile-email">
+
+    <label>Phone</label>
+    <input type="text" id="profile-phone">
+
+    <button id="update-profile-btn">Update Profile</button>
+
+    <p id="profile-message"></p>
+
+</section>
+
         <section id="view-user-logout" class="view">
             <h2>Driver/Vehicle Owner logout</h2>
             <p>view-user-logout</p>
@@ -329,7 +347,7 @@
 
     <hr>
 
-    <h3>2. View Driver Citation History</h3>
+    <h3>2. View Driver Citation History - [use IDs 1-5 for testing purposes]</h3>
 
     <label>Driver ID</label>
     <input type="number" id="history-driver-id">
