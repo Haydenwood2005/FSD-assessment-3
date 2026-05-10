@@ -6,7 +6,7 @@ The API is set up using uvicorn, using uvicorn main:app --reload in a terminal t
 This is how to run the given code:
 
 Open all 3 files (Frontend, Backend API on VS code , CorrectionNoticeDB on MySQL workbench) simultaniously.
-Open a terminal on the API VScode, and run: uvicorn main:app --reload
+Open a terminal on the API VScode, and run: python -m uvicorn main:app --reload
 Open a terminal on the frontend VScode, and run: python -m http.server 5500
 
 then open: 
