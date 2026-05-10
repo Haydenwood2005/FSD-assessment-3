@@ -11,7 +11,7 @@ def get_connection(): #gets the connection for the database using passwords writ
             port=3306,
             user="officer_user", #officers username 
             password="OfficerPass123", #officers password
-            database="CorrectionNoticeDB" #database name
+            database="correctionnoticedb" #database name
         )
         return connection
 
