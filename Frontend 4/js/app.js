@@ -227,6 +227,8 @@ function navigateTo(route, params = {}) {
                 { label: 'Info' }
             ]);
 
+            loadUsersForInfoPage();
+
             break;
 
         case 'user-login':
@@ -280,8 +282,6 @@ function navigateTo(route, params = {}) {
                 { label: 'Admin' },
                 { label: 'Dashboard' }
             ]);
-
-            loadOfficerDashboard();
 
             break;
 
@@ -835,8 +835,14 @@ function handleLogin(loginRole) {
             data.access_token
         );
 
+        // Save role
+        sessionStorage.setItem(
+            'role',
+            data.role
+        );
+
         // OFFICER LOGIN
-        if (username === 'officer_user') {
+        if (data.role === 'officer') {
 
             state.currentUser = {
                 username: username,
@@ -854,12 +860,13 @@ function handleLogin(loginRole) {
             setVisibleNav('admin-nav');
 
             navigateTo('admin-dash');
+            loadAdminStats();
 
             return;
         }
 
         // CITIZEN LOGIN
-        if (username === 'citizen_user') {
+        if (data.role === 'citizen') {
 
             state.currentUser = {
                 username: username,
@@ -934,37 +941,291 @@ function confirmAction(message, callback) {
 }
 
 
-async function loadOfficerDashboard() {
 
-    try {
+function loadUsersForInfoPage() {
 
-        const [totalRes, violationRes, districtRes] = await Promise.all([
-            fetch(API_URL + "/stats/total-citations"),
-            fetch(API_URL + "/stats/by-violation"),
-            fetch(API_URL + "/stats/by-district")
-        ]);
+    console.log('Loading users for info page...');
 
-        const total = await totalRes.json();
-        const violations = await violationRes.json();
-        const districts = await districtRes.json();
+    const tableBody = document.getElementById('users-table-body');
 
-        // TOTAL
-        document.getElementById("total-citations").innerHTML =
-            `<h3>Total Citations: ${total.total}</h3>`;
-
-        // VIOLATIONS TABLE
-        document.getElementById("violation-chart").innerHTML =
-            violations.map(v =>
-                `<p>${v.Violation_Name}: ${v.total}</p>`
-            ).join("");
-
-        // DISTRICT TABLE
-        document.getElementById("district-chart").innerHTML =
-            districts.map(d =>
-                `<p>${d.Violation_District}: ${d.total}</p>`
-            ).join("");
-
-    } catch (err) {
-        console.error(err);
+    if (!tableBody) {
+        console.log('users-table-body not found');
+        return;
     }
+
+    fetch(API_URL + '/users')
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(users) {
+
+            console.log(users);
+
+            tableBody.innerHTML = '';
+
+            users.forEach(function(user) {
+
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.password}</td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        })
+        .catch(function(error) {
+
+            console.error(error);
+
+            tableBody.innerHTML =
+                '<tr><td colspan="2">Could not load users.</td></tr>';
+        });
+}
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    loadUsersForInfoPage();
+});
+
+
+function loadAdminStats() {
+
+
+    const token = sessionStorage.getItem('token');
+
+    fetch(API_URL + '/admin/stats/total-citations', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('total-citations').textContent =
+            data.total_citations;
+    });
+
+    fetch(API_URL + '/admin/stats/by-violation', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const box = document.getElementById('citations-by-violation');
+        box.innerHTML = '';
+
+        data.forEach(item => {
+            box.innerHTML += `
+                <tr>
+                    <td>${item.Violation_Name}</td>
+                    <td>${item.total}</td>
+                </tr>
+            `;
+        });
+    });
+
+    fetch(API_URL + '/admin/stats/by-district', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const box = document.getElementById('citations-by-district');
+        box.innerHTML = '';
+
+        data.forEach(item => {
+            box.innerHTML += `
+                <tr>
+                    <td>${item.Violation_District}</td>
+                    <td>${item.total}</td>
+                </tr>
+            `;
+        });
+    });
+
+    fetch(API_URL + '/admin/stats/by-detachment', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const box = document.getElementById('citations-by-detachment');
+        box.innerHTML = '';
+
+        data.forEach(item => {
+            box.innerHTML += `
+                <tr>
+                    <td>${item.Violation_Detachment}</td>
+                    <td>${item.total}</td>
+                </tr>
+            `;
+        });
+    });
+}
+
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const createBtn = document.getElementById('create-citation-btn');
+    const historyBtn = document.getElementById('load-driver-history-btn');
+    const updateBtn = document.getElementById('update-citation-btn');
+    const deleteBtn = document.getElementById('delete-citation-btn');
+
+    if (createBtn) {
+        createBtn.addEventListener('click', createCitation);
+    }
+
+    if (historyBtn) {
+        historyBtn.addEventListener('click', loadDriverHistory);
+    }
+
+    if (updateBtn) {
+        updateBtn.addEventListener('click', updateCitationLocation);
+    }
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', deleteCitation);
+    }
+});
+
+
+function createCitation() {
+    const token = sessionStorage.getItem('token');
+    const driverId = document.getElementById('create-driver-id').value;
+
+    const citationData = {
+        OfficerID: Number(document.getElementById('create-officer-id').value),
+        VehicleID: Number(document.getElementById('create-vehicle-id').value),
+        ViolationTypesID: Number(document.getElementById('create-violation-type-id').value),
+        Violation_Date: document.getElementById('create-violation-date').value,
+        Violation_Time: document.getElementById('create-violation-time').value,
+        Violation_Street: document.getElementById('create-street').value,
+        Violation_City: document.getElementById('create-city').value,
+        Violation_District: document.getElementById('create-district').value,
+        Violation_Detachment: document.getElementById('create-detachment').value
+    };
+
+    fetch(API_URL + '/drivers/' + driverId + '/notices', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(citationData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        showToast(data.message || 'Citation created successfully');
+        loadAdminStats();
+    })
+    .catch(error => {
+        console.error(error);
+        showToast('Could not create citation');
+    });
+}
+
+
+function loadDriverHistory() {
+    const token = sessionStorage.getItem('token');
+    const driverId = document.getElementById('history-driver-id').value;
+    const results = document.getElementById('driver-history-results');
+
+    results.innerHTML = 'Loading...';
+
+    fetch(API_URL + '/drivers/' + driverId + '/notices', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        results.innerHTML = '';
+
+        if (!Array.isArray(data)) {
+            results.innerHTML = '<p>No history found.</p>';
+            return;
+        }
+
+        data.forEach(notice => {
+            results.innerHTML += `
+                <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+                    <p><strong>Notice ID:</strong> ${notice.NoticeID}</p>
+                    <p><strong>Driver:</strong> ${notice.Driver_First_Name} ${notice.Driver_Last_Name}</p>
+                    <p><strong>Violation:</strong> ${notice.Violation_Name}</p>
+                    <p><strong>Date:</strong> ${notice.Violation_Date}</p>
+                    <p><strong>Time:</strong> ${notice.Violation_Time}</p>
+                    <p><strong>Street:</strong> ${notice.Violation_Street}</p>
+                    <p><strong>City:</strong> ${notice.Violation_City}</p>
+                    <p><strong>District:</strong> ${notice.Violation_District}</p>
+                    <p><strong>Detachment:</strong> ${notice.Violation_Detachment}</p>
+                    <p><strong>Officer:</strong> ${notice.Officer_First_Name} ${notice.Officer_Last_Name}</p>
+                </div>
+            `;
+        });
+    })
+    .catch(error => {
+        console.error(error);
+        results.innerHTML = '<p>Could not load history.</p>';
+    });
+}
+
+
+function updateCitationLocation() {
+    const token = sessionStorage.getItem('token');
+    const noticeId = document.getElementById('update-notice-id').value;
+
+    const updateData = {
+        Violation_Street: document.getElementById('update-street').value,
+        Violation_City: document.getElementById('update-city').value,
+        Violation_District: document.getElementById('update-district').value,
+        Violation_Detachment: document.getElementById('update-detachment').value
+    };
+
+    fetch(API_URL + '/notices/' + noticeId + '/location', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(updateData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        showToast(data.message || 'Citation updated successfully');
+        loadAdminStats();
+    })
+    .catch(error => {
+        console.error(error);
+        showToast('Could not update citation');
+    });
+}
+
+
+function deleteCitation() {
+    const token = sessionStorage.getItem('token');
+    const noticeId = document.getElementById('delete-notice-id').value;
+
+    if (!confirm('Are you sure you want to delete this citation?')) {
+        return;
+    }
+
+    fetch(API_URL + '/notices/' + noticeId, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        showToast(data.message || 'Citation deleted successfully');
+        loadAdminStats();
+    })
+    .catch(error => {
+        console.error(error);
+        showToast('Could not delete citation');
+    });
 }
