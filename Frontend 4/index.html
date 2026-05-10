@@ -61,6 +61,23 @@
                 <li>Username: officer_user</li>
                 <li>Password: OfficerPass123</li>
             </ul>
+
+            <h3>Registered Citizen Accounts</h3>
+
+            <table border="1" style="width:50%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Password</th>
+                    </tr>
+                </thead>
+
+                <tbody id="users-table-body">
+                    <tr>
+                        <td colspan="2">Loading users...</td>
+                    </tr>
+                </tbody>
+            </table>
         </section>
 
         <section id="view-user-login" class="view">
@@ -209,21 +226,151 @@
 
         <!-- Administrator interface views -->
         <section id="view-admin-dashboard" class="view">
-            <h2>System Overview</h2>
 
-            <div id="total-citations"></div>
+            <h2>Administrator Dashboard</h2>
 
-            <h3>Violations Breakdown</h3>
-            <div id="violation-chart"></div>
+            <h3>System Overview</h3>
 
-            <h3>District Breakdown</h3>
-            <div id="district-chart"></div>
-            <p>view-admin-dashboard</p>
-        </section>
+            <p>
+                    Total Citations Issued:
+                <strong id="total-citations">Loading...</strong>
+            </p>
+
+            <h4>Citations by Violation Type</h4>
+
+            <table border="1" style="width:50%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>Violation Type</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+
+                <tbody id="citations-by-violation">
+                    <tr>
+                        <td colspan="2">Loading...</td>
+                    </tr>
+                 </tbody>
+            </table>
+
+            <h4>Citations by District</h4>
+
+            <table border="1" style="width:50%; border-collapse:collapse;">
+                <thead>
+                    <tr>
+                        <th>District</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="citations-by-district">
+            <tr>
+                <td colspan="2">Loading...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>Citations by Detachment</h4>
+
+    <table border="1" style="width:50%; border-collapse:collapse;">
+        <thead>
+            <tr>
+                <th>Detachment</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+
+        <tbody id="citations-by-detachment">
+            <tr>
+                <td colspan="2">Loading...</td>
+            </tr>
+        </tbody>
+    </table>
+
+</section>
+
         <section id="view-admin-management" class="view">
             <h2>Administrator management</h2>
-            <p>view-admin-management</p>
-        </section>
+
+    <h2>Citation Management Functions</h2>
+
+    <h3>1. Create New Citation</h3>
+
+    <label>Driver ID</label>
+    <input type="number" id="create-driver-id">
+
+    <label>Officer ID</label>
+    <input type="number" id="create-officer-id">
+
+    <label>Vehicle ID</label>
+    <input type="number" id="create-vehicle-id">
+
+    <label>Violation Type ID</label>
+    <input type="number" id="create-violation-type-id">
+
+    <label>Violation Date</label>
+    <input type="date" id="create-violation-date">
+
+    <label>Violation Time</label>
+    <input type="time" id="create-violation-time">
+
+    <label>Street</label>
+    <input type="text" id="create-street">
+
+    <label>City</label>
+    <input type="text" id="create-city">
+
+    <label>District</label>
+    <input type="text" id="create-district">
+
+    <label>Detachment</label>
+    <input type="text" id="create-detachment">
+
+    <button id="create-citation-btn">Create Citation</button>
+
+    <hr>
+
+    <h3>2. View Driver Citation History</h3>
+
+    <label>Driver ID</label>
+    <input type="number" id="history-driver-id">
+
+    <button id="load-driver-history-btn">Load History</button>
+
+    <div id="driver-history-results"></div>
+
+    <hr>
+
+    <h3>3. Update Citation Location</h3>
+
+    <label>Notice ID</label>
+    <input type="text" id="update-notice-id">
+
+    <label>New Street</label>
+    <input type="text" id="update-street">
+
+    <label>New City</label>
+    <input type="text" id="update-city">
+
+    <label>New District</label>
+    <input type="text" id="update-district">
+
+    <label>New Detachment</label>
+    <input type="text" id="update-detachment">
+
+    <button id="update-citation-btn">Update Citation</button>
+
+    <hr>
+
+    <h3>4. Delete Citation</h3>
+
+    <label>Notice ID</label>
+    <input type="text" id="delete-notice-id">
+
+    <button id="delete-citation-btn">Delete Citation</button>
+
+</section>
+
+
         <section id="view-admin-logout" class="view">
             <h2>Administrator logout</h2>
             <p>view-admin-logout</p>
