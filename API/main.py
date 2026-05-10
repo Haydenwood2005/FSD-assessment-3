@@ -173,6 +173,10 @@ class NoticeUpdateLocation(BaseModel): #allows an officer to update a specific p
     Violation_Detachment: str | None = None
 
 
+class UserProfileUpdate(BaseModel):
+    email: str
+    phone: str
+
 
 # GET ENDPOINTS 
 
@@ -835,6 +839,142 @@ def get_citations_by_detachment(current_user: dict = Depends(officer_only)):
             FROM Notice
             GROUP BY Violation_Detachment;
         """)
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@app.get("/profile")
+def get_profile(current_user: dict = Depends(get_current_user)):
+
+    connection = get_connection()
+
+    if connection is None:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT username, full_name, date_of_birth, email, phone,
+                   licence_number, vehicle_registration, role
+            FROM users
+            WHERE username = %s
+            """,
+            (current_user["username"],)
+        )
+
+        user = cursor.fetchone()
+
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        return user
+
+    finally:
+        cursor.close()
+        connection.close()
+
+@app.put("/profile")
+def update_profile(
+    profile: UserProfileUpdate,
+    current_user: dict = Depends(get_current_user)
+):
+
+    connection = get_connection()
+
+    if connection is None:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            UPDATE users
+            SET email = %s,
+                phone = %s
+            WHERE username = %s
+            """,
+            (
+                profile.email,
+                profile.phone,
+                current_user["username"]
+            )
+        )
+
+        connection.commit()
+
+        return {"message": "Profile updated successfully"}
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@app.get("/my-notices")
+def get_my_notices(current_user: dict = Depends(get_current_user)):
+
+    connection = get_connection()
+
+    if connection is None:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT vehicle_registration
+            FROM users
+            WHERE username = %s
+            """,
+            (current_user["username"],)
+        )
+
+        user = cursor.fetchone()
+
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        vehicle_registration = user["vehicle_registration"]
+
+        cursor.execute(
+            """
+            SELECT 
+                n.NoticeID,
+                n.Violation_Date,
+                n.Violation_Time,
+                n.Violation_Street,
+                n.Violation_City,
+                n.Violation_District,
+                n.Violation_Detachment,
+
+                vt.Violation_Code,
+                vt.Violation_Name,
+                vt.Violation_Description,
+
+                o.First_Name AS Officer_First_Name,
+                o.Last_Name AS Officer_Last_Name,
+
+                v.Vehicles_Licence_Number,
+                v.Make,
+                v.Color,
+                v.Year,
+                v.Type
+
+            FROM Notice n
+            JOIN Vehicle v ON n.VehicleID = v.VehicleID
+            JOIN ViolationTypes vt ON n.ViolationTypesID = vt.ViolationTypesID
+            JOIN Officer o ON n.OfficerID = o.OfficerID
+            WHERE v.Vehicles_Licence_Number = %s
+            """,
+            (vehicle_registration,)
+        )
+
         return cursor.fetchall()
 
     finally:
