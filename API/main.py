@@ -730,3 +730,113 @@ def register_user(user: UserRegister):
     finally:
         cursor.close()
         connection.close()
+
+
+@app.get("/users")
+def get_all_users():
+    connection = get_connection()
+
+    if connection is None:
+        raise HTTPException(status_code=500, detail="Database connection failed")
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT 
+                username,
+                password,
+                full_name,
+                email,
+                phone,
+                licence_number,
+                vehicle_registration,
+                role
+            FROM users;
+        """)
+
+        return cursor.fetchall()
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+
+@app.get("/admin/stats/total-citations")
+def get_total_citations(current_user: dict = Depends(officer_only)):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT COUNT(*) AS total_citations FROM Notice;")
+        return cursor.fetchone()
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@app.get("/admin/stats/by-violation")
+def get_citations_by_violation(current_user: dict = Depends(officer_only)):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT 
+                vt.Violation_Name,
+                COUNT(*) AS total
+            FROM Notice n
+            JOIN ViolationTypes vt 
+            ON n.ViolationTypesID = vt.ViolationTypesID
+            GROUP BY vt.Violation_Name;
+        """)
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@app.get("/admin/stats/by-district")
+def get_citations_by_district(current_user: dict = Depends(officer_only)):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT 
+                Violation_District,
+                COUNT(*) AS total
+            FROM Notice
+            GROUP BY Violation_District;
+        """)
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@app.get("/admin/stats/by-detachment")
+def get_citations_by_detachment(current_user: dict = Depends(officer_only)):
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT 
+                Violation_Detachment,
+                COUNT(*) AS total
+            FROM Notice
+            GROUP BY Violation_Detachment;
+        """)
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        connection.close()
