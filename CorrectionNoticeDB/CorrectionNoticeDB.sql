@@ -4,7 +4,7 @@ DROP DATABASE IF EXISTS CorrectionNoticeDB;
 -- Drop users if they exist
 DROP USER IF EXISTS 'officer_user'@'localhost';
 DROP USER IF EXISTS 'citizen_user'@'localhost';
--- tables, users and data deleted and refreshed so no duplicate when ran again.
+-- tables, users and data deleted and refreshed so no duplicate when ran again. - keeps clean for assignment
 -- Create fresh database
 
 CREATE DATABASE CorrectionNoticeDB
@@ -20,6 +20,21 @@ USE CorrectionNoticeDB;
 
 
 -- 1. Create Tables (DDL)
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    date_of_birth DATE,
+    email VARCHAR(100),
+    phone VARCHAR(30),
+    licence_number VARCHAR(50),
+    vehicle_registration VARCHAR(50),
+    role VARCHAR(20) DEFAULT 'citizen',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- Table: RegisteredOwner
 CREATE TABLE RegisteredOwner (
@@ -212,6 +227,52 @@ SELECT NoticeID, 1, 0, 0 FROM Notice WHERE Violation_Street = 'Maple Street';
 INSERT INTO ActionSelection (NoticeID, Action_Number_1, Action_Number_2, Action_Number_3)
 SELECT NoticeID, 1, 0, 0 FROM Notice WHERE Violation_Street = 'Birch Lane';
 
+INSERT INTO users
+(
+    username,
+    password,
+    full_name,
+    date_of_birth,
+    email,
+    phone,
+    licence_number,
+    vehicle_registration,
+    role
+)
+VALUES
+(
+    'citizen_user',
+    'CitizenPass123',
+    'Test Citizen',
+    '1995-06-15',
+    'citizen@email.com',
+    '07123456789',
+    'CIT123456',
+    'NYC1001',
+    'citizen'
+),
+(
+    'hayden_wood',
+    'HaydenPass123',
+    'Hayden Wood',
+    '2005-12-20',
+    'haydenwood24@outlook.com',
+    '07914675395',
+    'HWD789012',
+    'RJ08DLO',
+    'citizen'
+),
+(
+    'anna_ryan',
+    'AnnaPass123',
+    'Anna Ryan',
+    '2006-03-07',
+    'annakryan@email.com',
+    '07999888777',
+    'ARN345678',
+    'W00DY17',
+    'citizen'
+);
 
 
 
@@ -224,8 +285,13 @@ SELECT * FROM Driver;
 SELECT * FROM ViolationTypes;
 SELECT * FROM Notice;
 SELECT * FROM ActionSelection;
+SELECT * FROM users;
 
+DESCRIBE users;
 
+USE correctionnoticedb;
+
+SELECT username, role, created_at FROM users;
 
 
 -- 5. 10 Queries (DML)
