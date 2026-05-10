@@ -155,7 +155,7 @@ GRANT SELECT ON CorrectionNoticeDB.* TO 'citizen_user'@'localhost';
 INSERT INTO RegisteredOwner (First_Name, Last_Name, Address, City, State, Postal_Code, Phone, Email)
 VALUES 
 ('Hayden', 'Wood', '29 Main Street', 'Ravenstone', 'LS', 'LE672AS', '07914675395', 'haydenwood24@outlook.com'),
-('Emily', 'Smith', '12 Oak Avenue', 'Jersey City', 'NJ', '10801', '07914563210', 'emilysmith@gmail.com'),
+('Anna', 'Ryan', '12 Oak Avenue', 'Jersey City', 'NJ', '10801', '07914563210', 'emilysmith@gmail.com'),
 ('James', 'Brown', '45 Pine Road', 'Stamford', 'CT', '10601', '07914785932', 'jamesbrown@yahoo.com'),
 ('Sophia', 'Taylor', '78 Maple Street', 'Philadelphia', 'PA', '10528', '07914856321', 'sophiataylor@hotmail.com'),
 ('Liam', 'Johnson', '101 Birch Lane', 'Boston', 'MA', '10550', '07914987654', 'liamjohnson@gmail.com');
@@ -182,7 +182,7 @@ VALUES
 INSERT INTO Driver (First_Name, Last_Name, Address, City, State, Postal_Code, Drivers_Licence_Number, Drivers_Licence_Issued_State, Date_Of_Birth, Height, Weight, Eyes_Colour)
 VALUES
 ('Hayden', 'Wood', '29 Main Street', 'Ravenstone', 'NY', 'LE672AS', 'D1234567890123456', 'NY', '2005-12-20', '5.9', 75, 'Brown'),
-('Emily', 'Smith', '12 Oak Avenue', 'Jersey City', 'NJ', '10801', 'D2345678901234567', 'NJ', '1988-11-23', '5.5', 60, 'Blue'),
+('Anna', 'Ryan', '12 Oak Avenue', 'Jersey City', 'NJ', '10801', 'D2345678901234567', 'NJ', '1988-11-23', '5.5', 60, 'Blue'),
 ('James', 'Brown', '45 Pine Road', 'Stamford', 'CT', '10601', 'D3456789012345678', 'CT', '2006-03-15', '6.0', 80, 'Green'),
 ('Sophia', 'Taylor', '78 Maple Street', 'Philadelphia', 'PA', '10528', 'D4567890123456789', 'PA', '1995-07-30', '5.6', 65, 'Hazel'),
 ('Liam', 'Johnson', '101 Birch Lane', 'Boston', 'MA', '10550', 'D5678901234567890', 'MA', '1985-12-01', '5.10', 78, 'Brown');
@@ -241,25 +241,14 @@ INSERT INTO users
 )
 VALUES
 (
-    'citizen_user',
-    'CitizenPass123',
-    'Test Citizen',
-    '1995-06-15',
-    'citizen@email.com',
-    '07123456789',
-    'CIT123456',
-    'NYC1001',
-    'citizen'
-),
-(
     'hayden_wood',
     'HaydenPass123',
     'Hayden Wood',
     '2005-12-20',
-    'haydenwood24@outlook.com',
+    'haydenwood@email.com',
     '07914675395',
-    'HWD789012',
-    'RJ08DLO',
+    'D1234567890123456',
+    'JR80ODL',
     'citizen'
 ),
 (
@@ -268,14 +257,111 @@ VALUES
     'Anna Ryan',
     '2006-03-07',
     'annakryan@email.com',
-    '07999888777',
-    'ARN345678',
-    'W00DY17',
+    '07971245560',
+    'D2345678901234567',
+    'EF456GH',
+    'citizen'
+),
+(
+    'james_brown',
+    'JamesPass123',
+    'James Brown',
+    '1998-03-03',
+    'jamesbrown@email.com',
+    '07520466770',
+    'D3456789012345678',
+    '3IJ789KL',
     'citizen'
 );
 
+UPDATE users
+SET 
+    full_name = 'Hayden Wood',
+    date_of_birth = '2005-12-20',
+    email = 'haydenwood@email.com',
+    phone = '07111111111',
+    licence_number = 'D1234567890123456',
+    vehicle_registration = 'JR80ODL'
+WHERE username = 'hayden_wood';
+
+UPDATE users
+SET 
+    full_name = 'Anna Ryan',
+    date_of_birth = '2006-03-07',
+    email = 'annakryan@email.com',
+    phone = '07222222222',
+    licence_number = 'D2345678901234567',
+    vehicle_registration = 'EF456GH'
+WHERE username = 'anna_ryan';
+
+UPDATE users
+SET 
+    full_name = 'James Brown',
+    date_of_birth = '1998-03-03',
+    email = 'jamesbrown@email.com',
+    phone = '07333333333',
+    licence_number = 'D3456789012345678',
+    vehicle_registration = '3IJ789KL'
+WHERE username = 'citizen_user';
 
 
+INSERT INTO Notice
+(
+    NoticeID,
+    OfficerID,
+    VehicleID,
+    DriverID,
+    ViolationTypesID,
+    Violation_Date,
+    Violation_Time,
+    Violation_Street,
+    Violation_City,
+    Violation_District,
+    Violation_Detachment
+)
+VALUES
+(
+    UUID(),
+    1,
+    1,
+    1,
+    1,
+    '2026-05-10',
+    '09:30:00',
+    '5th Avenue',
+    'New York',
+    'Manhattan',
+    'Central'
+),
+(
+    UUID(),
+    1,
+    2,
+    2,
+    2,
+    '2026-05-10',
+    '11:15:00',
+    'Broadway',
+    'New York',
+    'Manhattan',
+    'South'
+),
+(
+    UUID(),
+    1,
+    3,
+    3,
+    3,
+    '2026-05-10',
+    '14:45:00',
+    'Madison Avenue',
+    'New York',
+    'Brooklyn',
+    'East'
+);
+
+SELECT * FROM users;
+SELECT * FROM Notice;
 -- 4. View All Data In Tables
 
 SELECT * FROM RegisteredOwner;
