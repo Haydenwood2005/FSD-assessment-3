@@ -12,10 +12,3 @@ Open a terminal on the frontend VScode, and run: python -m http.server 5500
 then open: 
 this will open the http link to the frontend 
 
-
-
-These are the testing procedures for the application:
-
-
-
-This is the troubleshooting guidance:
