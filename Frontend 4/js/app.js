@@ -265,6 +265,8 @@ function navigateTo(route, params = {}) {
                 { label: 'Dashboard' }
             ]);
 
+             loadMyNotices();
+             
             break;
 
         case 'user-profile':
@@ -273,6 +275,8 @@ function navigateTo(route, params = {}) {
                 { label: 'User' },
                 { label: 'Profile' }
             ]);
+
+            loadUserProfile();
 
             break;
 
@@ -1227,5 +1231,153 @@ function deleteCitation() {
     .catch(error => {
         console.error(error);
         showToast('Could not delete citation');
+    });
+}
+
+
+function loadUserProfile() {
+
+    const token = sessionStorage.getItem('token');
+
+    fetch(API_URL + '/profile', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(response => response.json())
+    .then(user => {
+
+        document.getElementById('profile-username').textContent =
+            user.username;
+
+        document.getElementById('profile-full-name').textContent =
+            user.full_name;
+
+        document.getElementById('profile-dob').textContent =
+            user.date_of_birth;
+
+        document.getElementById('profile-licence').textContent =
+            user.licence_number;
+
+        document.getElementById('profile-vehicle').textContent =
+            user.vehicle_registration;
+
+        document.getElementById('profile-email').value =
+            user.email;
+
+        document.getElementById('profile-phone').value =
+            user.phone;
+    })
+    .catch(error => {
+        console.error(error);
+        showToast('Could not load profile');
+    });
+}
+
+
+function updateUserProfile() {
+
+    const token = sessionStorage.getItem('token');
+
+    const email = document.getElementById('profile-email').value;
+    const phone = document.getElementById('profile-phone').value;
+
+    if (!email || !phone) {
+        document.getElementById('profile-message').textContent =
+            'Email and phone are required.';
+        return;
+    }
+
+    fetch(API_URL + '/profile', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({
+            email: email,
+            phone: phone
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('profile-message').textContent =
+            data.message || 'Profile updated.';
+
+        showToast('Profile updated successfully');
+    })
+    .catch(error => {
+        console.error(error);
+        showToast('Could not update profile');
+    });
+}
+
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const updateProfileBtn =
+        document.getElementById('update-profile-btn');
+
+    if (updateProfileBtn) {
+        updateProfileBtn.addEventListener(
+            'click',
+            updateUserProfile
+        );
+    }
+});
+
+
+function loadMyNotices() {
+
+    const token = sessionStorage.getItem('token');
+
+    const list =
+        document.getElementById('my-notices-list');
+
+    if (!list) {
+        return;
+    }
+
+    list.innerHTML = 'Loading citations...';
+
+    fetch(API_URL + '/my-notices', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(notices) {
+
+        list.innerHTML = '';
+
+        if (!Array.isArray(notices) || notices.length === 0) {
+            list.innerHTML = '<p>No citations found for your vehicle.</p>';
+            return;
+        }
+
+        notices.forEach(function(notice) {
+
+            list.innerHTML += `
+                <div style="border:1px solid #ccc; padding:12px; margin:12px 0;">
+                    <p><strong>Notice Number:</strong> ${notice.NoticeID}</p>
+                    <p><strong>Date:</strong> ${notice.Violation_Date}</p>
+                    <p><strong>Time:</strong> ${notice.Violation_Time}</p>
+                    <p><strong>Location:</strong> ${notice.Violation_Street}, ${notice.Violation_City}</p>
+                    <p><strong>District:</strong> ${notice.Violation_District}</p>
+                    <p><strong>Detachment:</strong> ${notice.Violation_Detachment}</p>
+                    <p><strong>Violation:</strong> ${notice.Violation_Name}</p>
+                    <p><strong>Description:</strong> ${notice.Violation_Description}</p>
+                    <p><strong>Officer:</strong> ${notice.Officer_First_Name} ${notice.Officer_Last_Name}</p>
+                    <p><strong>Vehicle:</strong> ${notice.Vehicles_Licence_Number} - ${notice.Make} ${notice.Type}</p>
+                    <p><strong>Status:</strong> Issued</p>
+                </div>
+            `;
+        });
+    })
+    .catch(function(error) {
+        console.error(error);
+        list.innerHTML = '<p>Could not load citations.</p>';
     });
 }
